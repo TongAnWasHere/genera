@@ -1,0 +1,32 @@
+question,answer,category
+What is the primary time complexity of searching for an element in a balanced binary search tree?,O(log n),Computer Science
+Which data structure uses LIFO (Last In First Out) ordering for insertions and removals?,Stack,Computer Science
+"In relational database management, what does the ""I"" in ACID transactions signify?",Isolation,Computer Science
+"Which two components form the core architecture of an operating system?
+1. The kernel
+2. System utilities and shells","Kernel, system utilities",Computer Science
+"In computer science, what is the term for a ""pure function"", one with no observable side effects and deterministic output?",Pure function,Computer Science
+What is the capital city of Australia?,Canberra,World Geography
+"What is the capital of Trinidad and Tobago, a twin-island Caribbean nation?",Port of Spain,World Geography
+Which strait connects the Atlantic Ocean to the Mediterranean Sea and separates Spain from Morocco?,Strait of Gibraltar,World Geography
+What is the longest river entirely located within Europe?,Volga River,World Geography
+Which Southeast Asian country is the only one in the region that was never colonized by a European power?,Thailand,World Geography
+What is the largest landlocked country in the world by surface area?,Kazakhstan,World Geography
+In what year did the Apollo 11 mission successfully land the first humans on the Moon?,1969,History
+Who was the first emperor of unified China responsible for starting the construction of the Great Wall?,Qin Shi Huang,History
+"Which 1648 peace treaties ended the Thirty Years' War, laying the groundwork for the modern sovereign state system?",Peace of Westphalia,History
+What ancient trade network linked China and East Asia with the Mediterranean for centuries?,The Silk Road,History
+In which city was the Khmer Empire's capital established during its height in the 12th century?,Angkor,History
+What molecule carries the genetic blueprint for development and functioning in living organisms?,DNA (Deoxyribonucleic acid),Biology
+Which cellular organelle is responsible for generating adenosine triphosphate (ATP) through cellular respiration?,Mitochondrion,Biology
+"Name the three primary auditory ossicles in the human middle ear.","Malleus (hammer), incus (anvil), stapes (stirrup)",Biology
+What is the biological process by which green plants convert light energy into chemical energy stored in glucose?,Photosynthesis,Biology
+What term describes the symbiotic relationship where both species benefit mutually?,Mutualism,Biology
+What is the closest spiral galaxy to the Milky Way?,Andromeda Galaxy (M31),Astronomy
+What boundary around a black hole marks the threshold beyond which nothing can escape?,Event Horizon,Astronomy
+Which planet in our solar system has the highest average surface temperature due to an extreme runaway greenhouse effect?,Venus,Astronomy
+"What are Kepler's first two laws of planetary motion?","1. Planets move in elliptical orbits with the Sun at one focus.
+2. A line connecting a planet and the Sun sweeps out equal areas during equal intervals of time.",Astronomy
+"What is the term for words, like ""bank"" (river edge) and ""bank"" (financial institution), that share spelling and pronunciation but differ in meaning?",Homonyms,Linguistics
+Which language family includes Cambodian (Khmer) and Vietnamese?,Austroasiatic language family,Linguistics
+In phonetics what is the term for a consonant sound produced by completely blocking airflow in the vocal tract before releasing it?,Plosive (or stop),Linguistics

@@ -1,0 +1,10 @@
+# Environment variables
+.env
+
+# SQLite databases
+*.db
+
+# Python virtual environments & bytecode
+.venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,142 @@
+[
+  {
+    "question": "What is the primary time complexity of searching for an element in a balanced binary search tree?",
+    "answer": "O(log n)",
+    "category": "Computer Science"
+  },
+  {
+    "question": "Which data structure uses LIFO (Last In, First Out) ordering for insertions and removals?",
+    "answer": "Stack",
+    "category": "Computer Science"
+  },
+  {
+    "question": "In relational databases, what does the 'I' in ACID stand for?",
+    "answer": "Isolation",
+    "category": "Computer Science"
+  },
+  {
+    "question": "Which layer of the OSI model handles end-to-end communication and flow control (e.g., TCP)?",
+    "answer": "Transport Layer",
+    "category": "Computer Science"
+  },
+  {
+    "question": "What is the term for a function that calls itself to solve a smaller instance of the same problem?",
+    "answer": "Recursive function",
+    "category": "Computer Science"
+  },
+  {
+    "question": "What is the capital city of Australia?",
+    "answer": "Canberra",
+    "category": "World Geography"
+  },
+  {
+    "question": "Which strait connects the Atlantic Ocean to the Mediterranean Sea and separates Spain from Morocco?",
+    "answer": "Strait of Gibraltar",
+    "category": "World Geography"
+  },
+  {
+    "question": "What is the longest river entirely located within Europe?",
+    "answer": "Volga River",
+    "category": "World Geography"
+  },
+  {
+    "question": "Which Southeast Asian country is the only one in the region that was never colonized by a European power?",
+    "answer": "Thailand",
+    "category": "World Geography"
+  },
+  {
+    "question": "What is the largest landlocked country in the world by area?",
+    "answer": "Kazakhstan",
+    "category": "World Geography"
+  },
+  {
+    "question": "In what year did the Apollo 11 mission successfully land the first humans on the Moon?",
+    "answer": "1969",
+    "category": "History"
+  },
+  {
+    "question": "Who was the first emperor of unified China, responsible for starting the construction of the Great Wall?",
+    "answer": "Qin Shi Huang",
+    "category": "History"
+  },
+  {
+    "question": "Which treaty, signed in 1648, ended the Thirty Years' War in Central Europe and helped establish the modern nation-state concept?",
+    "answer": "Peace of Westphalia",
+    "category": "History"
+  },
+  {
+    "question": "What ancient trade network linked China and East Asia with the Mediterranean for centuries?",
+    "answer": "The Silk Road",
+    "category": "History"
+  },
+  {
+    "question": "In which city was the Khmer Empire's capital established during its height in the 12th century?",
+    "answer": "Angkor",
+    "category": "History"
+  },
+  {
+    "question": "What molecule carries the genetic blueprint for development and functioning in living organisms?",
+    "answer": "DNA (Deoxyribonucleic acid)",
+    "category": "Biology"
+  },
+  {
+    "question": "Which cellular organelle is responsible for generating adenosine triphosphate (ATP) through cellular respiration?",
+    "answer": "Mitochondrion",
+    "category": "Biology"
+  },
+  {
+    "question": "What is the biological process by which green plants convert light energy into chemical energy stored in glucose?",
+    "answer": "Photosynthesis",
+    "category": "Biology"
+  },
+  {
+    "question": "Which type of blood vessel carries oxygenated blood away from the heart to the rest of the body (with the exception of pulmonary vessels)?",
+    "answer": "Arteries",
+    "category": "Biology"
+  },
+  {
+    "question": "What term describes the symbiotic relationship where both species benefit mutually?",
+    "answer": "Mutualism",
+    "category": "Biology"
+  },
+  {
+    "question": "What is the closest spiral galaxy to the Milky Way?",
+    "answer": "Andromeda Galaxy (M31)",
+    "category": "Astronomy"
+  },
+  {
+    "question": "What boundary around a black hole marks the threshold beyond which nothing, not even light, can escape?",
+    "answer": "Event Horizon",
+    "category": "Astronomy"
+  },
+  {
+    "question": "Which planet in our solar system has the highest average surface temperature due to an extreme runaway greenhouse effect?",
+    "answer": "Venus",
+    "category": "Astronomy"
+  },
+  {
+    "question": "What is the name of the phase transition when gas is heated so intensely that electrons are stripped from nuclei?",
+    "answer": "Ionization (forming plasma)",
+    "category": "Astronomy"
+  },
+  {
+    "question": "What astronomical unit represents the average distance from the Earth to the Sun?",
+    "answer": "1 Astronomical Unit (AU, approximately 149.6 million km)",
+    "category": "Astronomy"
+  },
+  {
+    "question": "What term describes words that are spelled the same and sound the same but have different, unrelated meanings?",
+    "answer": "Homonyms",
+    "category": "Linguistics"
+  },
+  {
+    "question": "Which language family includes Cambodian (Khmer), Vietnamese, and Mon?",
+    "answer": "Austroasiatic language family",
+    "category": "Linguistics"
+  },
+  {
+    "question": "In phonetics, what is the term for a consonant sound produced by completely blocking airflow in the vocal tract before releasing it?",
+    "answer": "Plosive (or stop)",
+    "category": "Linguistics"
+  }
+]
