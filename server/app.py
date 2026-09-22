@@ -1,6 +1,7 @@
 import os
 from flask import Flask, send_from_directory
 from server import config, db
+from server.auth import auth_bp
 
 app = Flask(__name__, static_folder="../web", static_url_path="")
 app.config["SECRET_KEY"] = config.SECRET_KEY
@@ -11,6 +12,7 @@ app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production
 
 db.check_db()
 app.teardown_appcontext(db.close_db)
+app.register_blueprint(auth_bp)
 
 @app.route("/")
 def index():
