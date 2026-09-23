@@ -8,7 +8,7 @@ app.config["SECRET_KEY"] = config.SECRET_KEY
 app.config["DATABASE_PATH"] = config.DATABASE_PATH
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
+app.config["SESSION_COOKIE_SECURE"] = True
 
 db.check_db()
 app.teardown_appcontext(db.close_db)
