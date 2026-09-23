@@ -10,6 +10,7 @@ app.config["DATABASE_PATH"] = config.DATABASE_PATH
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = True
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
 
 db.check_db()
 app.teardown_appcontext(db.close_db)
