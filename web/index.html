@@ -57,10 +57,30 @@
     </section>
 
     <section id="tab-cards" class="tab-panel" hidden>
-      <div class="cards-header">
-        <button id="btn-add-card" class="btn btn-primary">+ Add Card</button>
+      <div class="cards-toolbar">
+        <div class="cards-search-bar">
+          <input type="text" id="cards-search-input" class="search-input" placeholder="Search cards by question or answer...">
+          <select id="cards-category-select" class="select-input">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        <div class="cards-filter-row">
+          <div class="filter-pills">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="official">Official</button>
+            <button class="filter-btn" data-filter="mine">Mine</button>
+            <button class="filter-btn" data-filter="hidden">Hidden</button>
+          </div>
+          <div class="cards-entry-points">
+            <button id="btn-add-card" class="btn btn-primary">+ Add Card</button>
+            <button id="btn-import-card" class="btn">Import</button>
+            <input type="file" id="import-file-input" accept=".json,.csv" style="display: none;">
+          </div>
+        </div>
       </div>
+      <div id="cards-count-bar" class="cards-count-bar"></div>
       <div id="cards-container"></div>
+      <div id="cards-pagination" class="cards-pagination"></div>
     </section>
 
     <section id="tab-settings" class="tab-panel" hidden>
@@ -91,6 +111,17 @@
         <button type="submit" id="modal-save-btn" class="btn btn-primary">Save</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="import-modal" class="modal">
+    <div class="import-modal-content">
+      <h3 id="import-modal-title">Import Summary</h3>
+      <p id="import-modal-summary"></p>
+      <div id="import-modal-details" class="import-details-box" style="display: none;"></div>
+      <div class="modal-actions">
+        <button type="button" id="import-modal-close-btn" class="btn btn-primary">Close</button>
+      </div>
+    </div>
   </dialog>
 
   <script type="module" src="js/app.js"></script>

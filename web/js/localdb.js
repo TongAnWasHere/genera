@@ -302,3 +302,38 @@ export async function is_card_hidden(card_kind, card_id) {
     const row = await get_progress(card_kind, card_id);
     return row !== null && row.hidden === 1;
 }
+
+export async function get_all_catalog_cards() {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("catalog", "readonly");
+        const store = tx.objectStore("catalog");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function get_all_progress_rows() {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("progress", "readonly");
+        const store = tx.objectStore("progress");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function get_all_categories() {
+    const catalog_cards = await get_all_catalog_cards();
+    const own_cards = await get_all_own_cards(false);
+    const categories = new Set();
+    for (const c of catalog_cards) {
+        if (c.category) categories.add(c.category);
+    }
+    for (const c of own_cards) {
+        if (c.category) categories.add(c.category);
+    }
+    return Array.from(categories).sort();
+}

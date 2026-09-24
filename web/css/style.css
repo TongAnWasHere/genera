@@ -180,10 +180,92 @@ body {
   color: var(--color-text-muted);
 }
 
-.cards-header {
+.cards-toolbar {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: var(--space-3);
   margin-bottom: var(--space-4);
+}
+
+.cards-search-bar {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.search-input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 14px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.select-input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.cards-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter-pills {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.filter-btn {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover {
+  background: #eaeef2;
+  color: var(--color-text);
+}
+
+.filter-btn.active {
+  background: var(--color-blue);
+  color: #ffffff;
+  border-color: var(--color-blue);
+  font-weight: 500;
+}
+
+.cards-entry-points {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.cards-count-bar {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.cards-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .btn {
@@ -249,6 +331,12 @@ body {
   gap: var(--space-2);
 }
 
+.badge-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 .badge {
   display: inline-block;
   font-size: 12px;
@@ -257,7 +345,21 @@ body {
   background-color: #eaeef2;
   padding: 2px 6px;
   border-radius: var(--radius);
-  align-self: flex-start;
+}
+
+.badge-official {
+  background-color: #f0f3f6;
+  color: var(--color-gray);
+}
+
+.badge-mine {
+  background-color: #ddf4ff;
+  color: var(--color-blue);
+}
+
+.badge-hidden {
+  background-color: #ffebe9;
+  color: var(--color-red);
 }
 
 .card-question {
@@ -327,4 +429,23 @@ body {
   justify-content: flex-end;
   gap: var(--space-2);
   margin-top: var(--space-2);
+}
+
+.import-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.import-details-box {
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  white-space: pre-wrap;
+  color: var(--color-text-muted);
 }
