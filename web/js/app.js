@@ -1,6 +1,7 @@
 import { count_store, get_all_own_cards, load_catalog_if_needed } from "./localdb.js";
 import { open_add_modal, populate_category_dropdown, render_cards_view, setup_cards_listeners } from "./cards.js";
 import { process_import_file } from "./importer.js";
+import { init_review_view, render_review_view } from "./review.js";
 
 const tabs = document.querySelectorAll(".tab-btn");
 const panels = document.querySelectorAll(".tab-panel");
@@ -16,6 +17,10 @@ tabs.forEach((btn) => {
             panel.hidden = false;
             if (btn.dataset.tab === "cards") {
                 refresh_cards_view();
+            } else if (btn.dataset.tab === "review") {
+                render_review_view();
+            } else if (btn.dataset.tab === "dashboard") {
+                update_dashboard_stats();
             }
         }
     });
@@ -30,6 +35,7 @@ if (add_card_btn) {
     add_card_btn.addEventListener("click", () => {
         open_add_modal(async () => {
             await refresh_cards_view();
+            await render_review_view();
             await update_dashboard_stats();
         });
     });
@@ -70,6 +76,7 @@ if (import_file_input) {
                 result.skipped_details
             );
             await refresh_cards_view();
+            await render_review_view();
             await update_dashboard_stats();
         } catch (err) {
             show_import_report("Import Failed", err.message, []);
@@ -122,6 +129,7 @@ async function update_dashboard_stats() {
 async function init_app() {
     try {
         setup_cards_listeners(update_dashboard_stats);
+        init_review_view(update_dashboard_stats);
         await load_catalog_if_needed();
         await update_dashboard_stats();
         await refresh_cards_view();

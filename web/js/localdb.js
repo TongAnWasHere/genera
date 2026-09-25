@@ -298,6 +298,23 @@ export async function set_card_hidden(card_kind, card_id, hidden) {
     });
 }
 
+export async function save_progress_row(row) {
+    const db = await open_db();
+    const to_save = {
+        ...row,
+        updated_at: get_utc_now(),
+        dirty: 1
+    };
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("progress", "readwrite");
+        const store = tx.objectStore("progress");
+        const req = store.put(to_save);
+        req.onsuccess = () => resolve(to_save);
+        req.onerror = () => reject(req.error);
+    });
+}
+
 export async function is_card_hidden(card_kind, card_id) {
     const row = await get_progress(card_kind, card_id);
     return row !== null && row.hidden === 1;
