@@ -337,3 +337,46 @@ export async function get_all_categories() {
     }
     return Array.from(categories).sort();
 }
+
+export async function get_user_settings() {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("settings", "readonly");
+        const store = tx.objectStore("settings");
+        const req = store.get("user_settings");
+        req.onsuccess = () => {
+            if (req.result) {
+                resolve(req.result);
+            } else {
+                resolve({
+                    id: "user_settings",
+                    daily_new_limit: 10,
+                    enabled_categories: [],
+                    updated_at: get_utc_now(),
+                    dirty: 0
+                });
+            }
+        };
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function save_user_settings(new_settings) {
+    const db = await open_db();
+    const existing = await get_user_settings();
+    const merged = {
+        ...existing,
+        ...new_settings,
+        id: "user_settings",
+        updated_at: get_utc_now(),
+        dirty: 1
+    };
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("settings", "readwrite");
+        const store = tx.objectStore("settings");
+        const req = store.put(merged);
+        req.onsuccess = () => resolve(merged);
+        req.onerror = () => reject(req.error);
+    });
+}
