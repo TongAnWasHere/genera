@@ -8,26 +8,81 @@ import {
 const max_file_size = 1024 * 1024;
 const max_own_cards = 5000;
 
-export async function import_json_string(json_string) {
-    if (!json_string || json_string.trim() === "") {
-        throw new Error("File is empty. Nothing was imported.");
+export function parse_csv(csv_text) {
+    const rows = [];
+    let current_row = [];
+    let current_field = "";
+    let inside_quotes = false;
+    let i = 0;
+    const len = csv_text.length;
+
+    while (i < len) {
+        const char = csv_text[i];
+
+        if (inside_quotes) {
+            if (char === '"') {
+                if (i + 1 < len && csv_text[i + 1] === '"') {
+                    current_field += '"';
+                    i += 2;
+                    continue;
+                } else {
+                    inside_quotes = false;
+                    i++;
+                    continue;
+                }
+            } else {
+                current_field += char;
+                i++;
+                continue;
+            }
+        } else {
+            if (char === '"') {
+                inside_quotes = true;
+                i++;
+                continue;
+            } else if (char === ',') {
+                current_row.push(current_field);
+                current_field = "";
+                i++;
+                continue;
+            } else if (char === '\r') {
+                if (i + 1 < len && csv_text[i + 1] === '\n') {
+                    i++;
+                }
+                current_row.push(current_field);
+                rows.push(current_row);
+                current_row = [];
+                current_field = "";
+                i++;
+                continue;
+            } else if (char === '\n') {
+                current_row.push(current_field);
+                rows.push(current_row);
+                current_row = [];
+                current_field = "";
+                i++;
+                continue;
+            } else {
+                current_field += char;
+                i++;
+                continue;
+            }
+        }
     }
 
-    let parsed_data;
-    try {
-        parsed_data = JSON.parse(json_string);
-    } catch (err) {
-        throw new Error("Malformed JSON file. Nothing was imported.");
+    if (inside_quotes) {
+        throw new Error("Malformed CSV: unclosed quote detected. Nothing was imported.");
     }
 
-    if (!Array.isArray(parsed_data)) {
-        throw new Error("JSON file must contain an array of cards. Nothing was imported.");
+    if (current_field !== "" || current_row.length > 0) {
+        current_row.push(current_field);
+        rows.push(current_row);
     }
 
-    if (parsed_data.length === 0) {
-        throw new Error("JSON array is empty. Nothing was imported.");
-    }
+    return rows;
+}
 
+async function validate_and_save_cards(card_rows) {
     const existing_cards = await get_all_own_cards(false);
     const existing_keys = new Set();
     for (const card of existing_cards) {
@@ -38,11 +93,10 @@ export async function import_json_string(json_string) {
     const valid_cards = [];
     const skipped_reports = [];
 
-    for (let i = 0; i < parsed_data.length; i++) {
-        const row_num = i + 1;
-        const item = parsed_data[i];
+    for (const item of card_rows) {
+        const row_num = item.row_num;
 
-        if (!item || typeof item !== "object" || Array.isArray(item)) {
+        if (item.invalid_item) {
             skipped_reports.push(`Row ${row_num}: item is not an object.`);
             continue;
         }
@@ -111,6 +165,87 @@ export async function import_json_string(json_string) {
     };
 }
 
+export async function import_json_string(json_string) {
+    if (!json_string || json_string.trim() === "") {
+        throw new Error("File is empty. Nothing was imported.");
+    }
+
+    let parsed_data;
+    try {
+        parsed_data = JSON.parse(json_string);
+    } catch (err) {
+        throw new Error("Malformed JSON file. Nothing was imported.");
+    }
+
+    if (!Array.isArray(parsed_data)) {
+        throw new Error("JSON file must contain an array of cards. Nothing was imported.");
+    }
+
+    if (parsed_data.length === 0) {
+        throw new Error("JSON array is empty. Nothing was imported.");
+    }
+
+    const card_rows = [];
+    for (let i = 0; i < parsed_data.length; i++) {
+        const item = parsed_data[i];
+        if (!item || typeof item !== "object" || Array.isArray(item)) {
+            card_rows.push({ row_num: i + 1, invalid_item: true });
+        } else {
+            card_rows.push({
+                row_num: i + 1,
+                question: item.question,
+                answer: item.answer,
+                category: item.category
+            });
+        }
+    }
+
+    return await validate_and_save_cards(card_rows);
+}
+
+export async function import_csv_string(csv_string) {
+    if (!csv_string || csv_string.trim() === "") {
+        throw new Error("File is empty. Nothing was imported.");
+    }
+
+    if (csv_string.charCodeAt(0) === 0xFEFF) {
+        csv_string = csv_string.slice(1);
+    }
+
+    const raw_rows = parse_csv(csv_string);
+    const rows = raw_rows.filter((r) => r.some((f) => f.trim() !== ""));
+
+    if (rows.length === 0) {
+        throw new Error("CSV file is empty. Nothing was imported.");
+    }
+
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const q_index = header.indexOf("question");
+    const a_index = header.indexOf("answer");
+    const c_index = header.indexOf("category");
+
+    if (q_index === -1 || a_index === -1) {
+        throw new Error("Missing CSV header ('question' and 'answer' columns required). Nothing was imported.");
+    }
+
+    if (rows.length === 1) {
+        throw new Error("CSV file contains no data rows. Nothing was imported.");
+    }
+
+    const card_rows = [];
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        card_rows.push({
+            row_num: i + 1,
+            question: row[q_index],
+            answer: row[a_index],
+            category: c_index !== -1 ? row[c_index] : ""
+        });
+    }
+
+    return await validate_and_save_cards(card_rows);
+}
+
 export async function process_import_file(file) {
     if (file.size > max_file_size) {
         throw new Error("File exceeds 1 MB limit. Nothing was imported.");
@@ -125,8 +260,8 @@ export async function process_import_file(file) {
     if (file_name.endsWith(".json")) {
         return await import_json_string(content);
     } else if (file_name.endsWith(".csv")) {
-        throw new Error("CSV import is coming in Phase 12. Please upload a JSON file.");
+        return await import_csv_string(content);
     } else {
-        throw new Error("Unsupported file format. Please upload a JSON file.");
+        throw new Error("Unsupported file format. Please upload a JSON or CSV file.");
     }
 }
