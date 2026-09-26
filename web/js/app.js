@@ -2,6 +2,7 @@ import { count_store, get_all_own_cards, load_catalog_if_needed } from "./locald
 import { open_add_modal, populate_category_dropdown, render_cards_view, setup_cards_listeners } from "./cards.js";
 import { process_import_file } from "./importer.js";
 import { init_review_view, render_review_view } from "./review.js";
+import { init_settings_view, render_settings_view } from "./settings.js";
 
 const tabs = document.querySelectorAll(".tab-btn");
 const panels = document.querySelectorAll(".tab-panel");
@@ -21,6 +22,8 @@ tabs.forEach((btn) => {
                 render_review_view();
             } else if (btn.dataset.tab === "dashboard") {
                 update_dashboard_stats();
+            } else if (btn.dataset.tab === "settings") {
+                render_settings_view();
             }
         }
     });
@@ -130,6 +133,10 @@ async function init_app() {
     try {
         setup_cards_listeners(update_dashboard_stats);
         init_review_view(update_dashboard_stats);
+        init_settings_view(async () => {
+            await render_review_view();
+            await update_dashboard_stats();
+        });
         await load_catalog_if_needed();
         await update_dashboard_stats();
         await refresh_cards_view();
