@@ -397,3 +397,130 @@ export async function save_user_settings(new_settings) {
         req.onerror = () => reject(req.error);
     });
 }
+
+export async function get_dirty_own_cards() {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("own_cards", "readonly");
+        const store = tx.objectStore("own_cards");
+        const req = store.getAll();
+        req.onsuccess = () => {
+            const list = (req.result || []).filter((c) => c.dirty === 1);
+            resolve(list);
+        };
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function get_dirty_progress_rows() {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("progress", "readonly");
+        const store = tx.objectStore("progress");
+        const req = store.getAll();
+        req.onsuccess = () => {
+            const list = (req.result || []).filter((p) => p.dirty === 1);
+            resolve(list);
+        };
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function get_dirty_settings() {
+    const settings = await get_user_settings();
+    if (settings && settings.dirty === 1) {
+        return {
+            daily_new_limit: settings.daily_new_limit ?? 10,
+            enabled_categories: settings.enabled_categories ?? [],
+            updated_at: settings.updated_at
+        };
+    }
+    return null;
+}
+
+export async function count_dirty_rows() {
+    const cards = await get_dirty_own_cards();
+    const progress = await get_dirty_progress_rows();
+    const settings = await get_dirty_settings();
+    return cards.length + progress.length + (settings ? 1 : 0);
+}
+
+export async function apply_sync_batch({
+    server_cards = [],
+    server_progress = [],
+    server_settings = null,
+    pushed_cards = [],
+    pushed_progress = [],
+    pushed_settings = null,
+    server_version = 0
+}) {
+    const db = await open_db();
+    const pushed_cards_map = new Map();
+    for (const c of pushed_cards) {
+        pushed_cards_map.set(c.id, c.updated_at);
+    }
+
+    const pushed_progress_map = new Map();
+    for (const p of pushed_progress) {
+        pushed_progress_map.set(`${p.card_kind}:${p.card_id}`, p.updated_at);
+    }
+
+    const conflicts = [];
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(["own_cards", "progress", "settings", "meta"], "readwrite");
+        const card_store = tx.objectStore("own_cards");
+        const prog_store = tx.objectStore("progress");
+        const settings_store = tx.objectStore("settings");
+        const meta_store = tx.objectStore("meta");
+
+        for (const sc of server_cards) {
+            const pushed_at = pushed_cards_map.get(sc.id);
+            if (pushed_at !== undefined) {
+                if (sc.updated_at !== pushed_at) {
+                    conflicts.push({ type: "card", id: sc.id, question: sc.question });
+                }
+            }
+            card_store.put({
+                ...sc,
+                dirty: 0
+            });
+        }
+
+        for (const sp of server_progress) {
+            const key = `${sp.card_kind}:${sp.card_id}`;
+            const pushed_at = pushed_progress_map.get(key);
+            if (pushed_at !== undefined) {
+                if (sp.updated_at !== pushed_at) {
+                    conflicts.push({ type: "progress", card_kind: sp.card_kind, card_id: sp.card_id });
+                }
+            }
+            prog_store.put({
+                ...sp,
+                dirty: 0
+            });
+        }
+
+        if (server_settings) {
+            if (pushed_settings) {
+                if (server_settings.updated_at !== pushed_settings.updated_at) {
+                    conflicts.push({ type: "settings" });
+                }
+            }
+            settings_store.put({
+                id: "user_settings",
+                daily_new_limit: server_settings.daily_new_limit,
+                enabled_categories: server_settings.enabled_categories || [],
+                updated_at: server_settings.updated_at,
+                dirty: 0
+            });
+        }
+
+        if (server_version > 0) {
+            meta_store.put({ key: "lastSyncVersion", value: server_version });
+        }
+
+        tx.oncomplete = () => resolve({ conflicts });
+        tx.onerror = () => reject(tx.error);
+    });
+}

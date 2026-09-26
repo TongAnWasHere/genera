@@ -12,6 +12,7 @@ import { process_import_file } from "./importer.js";
 import { init_review_view, render_review_view } from "./review.js";
 import { init_settings_view, render_settings_view } from "./settings.js";
 import { count_session_cards } from "./session.js";
+import { init_sync_engine, update_sync_status_ui, sync_now } from "./sync.js";
 
 const tabs = document.querySelectorAll(".tab-btn");
 const panels = document.querySelectorAll(".tab-panel");
@@ -49,6 +50,7 @@ if (add_card_btn) {
             await refresh_cards_view();
             await render_review_view();
             await update_dashboard_stats();
+            await update_sync_status_ui();
         });
     });
 }
@@ -90,6 +92,7 @@ if (import_file_input) {
             await refresh_cards_view();
             await render_review_view();
             await update_dashboard_stats();
+            await update_sync_status_ui();
         } catch (err) {
             show_import_report("Import Failed", err.message, []);
         } finally {
@@ -210,15 +213,31 @@ function render_dashboard_message(counts) {
 
 async function init_app() {
     try {
-        setup_cards_listeners(update_dashboard_stats);
-        init_review_view(update_dashboard_stats);
+        setup_cards_listeners(async () => {
+            await update_dashboard_stats();
+            await update_sync_status_ui();
+        });
+        init_review_view(async () => {
+            await update_dashboard_stats();
+            await update_sync_status_ui();
+            await sync_now(async () => {
+                await update_dashboard_stats();
+                await refresh_cards_view();
+            });
+        });
         init_settings_view(async () => {
             await render_review_view();
             await update_dashboard_stats();
+            await update_sync_status_ui();
         });
         await load_catalog_if_needed();
         await update_dashboard_stats();
         await refresh_cards_view();
+        await init_sync_engine(async () => {
+            await update_dashboard_stats();
+            await refresh_cards_view();
+            await render_review_view();
+        });
     } catch (err) {
         console.error("Initialization failed:", err);
     }
