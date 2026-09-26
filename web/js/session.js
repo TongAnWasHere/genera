@@ -235,12 +235,18 @@ export function count_session_cards({
         }
     }
 
+    const box_total = box_counts[1] + box_counts[2] + box_counts[3] + box_counts[4] + box_counts[5];
+    const total_unseen = unseen_catalog_count + unseen_own_count;
+    const total_visible = box_total + total_unseen;
+
     return {
         due_count: due_count,
         introduced_today_count: introduced_today_count,
         new_left_count: Math.min(remaining_new_official, unseen_catalog_count),
-        unseen_count: unseen_catalog_count + unseen_own_count,
-        total_visible: catalog_cards.filter((c) => is_category_enabled(c.category)).length + own_map.size,
+        unseen_count: total_unseen,
+        unseen_catalog_count: unseen_catalog_count,
+        unseen_own_count: unseen_own_count,
+        total_visible: total_visible,
         box_counts: box_counts
     };
 }

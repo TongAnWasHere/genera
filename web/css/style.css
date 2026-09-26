@@ -180,6 +180,24 @@ body {
   color: var(--color-text-muted);
 }
 
+.dashboard-action-card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dashboard-action-card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
 .cards-toolbar {
   display: flex;
   flex-direction: column;

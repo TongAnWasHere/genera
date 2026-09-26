@@ -95,9 +95,36 @@ async function render_start_screen(container) {
         today
     });
 
+    if (counts.total_visible === 0) {
+        const empty_card = document.createElement("div");
+        empty_card.className = "empty-state";
+        const empty_title = document.createElement("h2");
+        empty_title.textContent = "No Cards Available";
+        const empty_p = document.createElement("p");
+        empty_p.textContent = "Your collection has no cards available for review. Check back once catalog is loaded or add your own cards in the Cards tab.";
+        empty_card.appendChild(empty_title);
+        empty_card.appendChild(empty_p);
+        container.appendChild(empty_card);
+        return;
+    }
+
+    const eligible_count = counts.due_count + counts.new_left_count + counts.unseen_own_count;
+    if (eligible_count === 0) {
+        const empty_card = document.createElement("div");
+        empty_card.className = "empty-state";
+        const empty_title = document.createElement("h2");
+        empty_title.textContent = "All Caught Up!";
+        const empty_p = document.createElement("p");
+        empty_p.textContent = "No cards are due for review right now, and you have reached your daily limit for new cards. Check back tomorrow!";
+        empty_card.appendChild(empty_title);
+        empty_card.appendChild(empty_p);
+        container.appendChild(empty_card);
+        return;
+    }
+
     const info_p = document.createElement("p");
     info_p.className = "card-answer";
-    info_p.textContent = `Due today: ${counts.due_count} | New cards left today: ${counts.new_left_count}`;
+    info_p.textContent = `Due today: ${counts.due_count} | New cards left today: ${counts.new_left_count + counts.unseen_own_count}`;
 
     const start_btn = document.createElement("button");
     start_btn.id = "btn-start-session";
