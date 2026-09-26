@@ -524,3 +524,124 @@ export async function apply_sync_batch({
         tx.onerror = () => reject(tx.error);
     });
 }
+
+export async function merge_local_into_account({
+    server_cards = [],
+    server_progress = [],
+    server_settings = null,
+    server_version = 0,
+    username = ""
+}) {
+    const db = await open_db();
+    const local_own_cards = await get_all_own_cards(true);
+    const local_progress = await get_all_progress_rows();
+    const local_settings = await get_user_settings();
+
+    const normalize = (q, c) => `${(q || "").trim().toLowerCase()}:::${(c || "").trim().toLowerCase()}`;
+    const server_card_map = new Map();
+    for (const sc of server_cards) {
+        server_card_map.set(normalize(sc.question, sc.category), sc);
+    }
+
+    const remapped_uuids = new Map();
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(["own_cards", "progress", "settings", "meta"], "readwrite");
+        const card_store = tx.objectStore("own_cards");
+        const prog_store = tx.objectStore("progress");
+        const settings_store = tx.objectStore("settings");
+        const meta_store = tx.objectStore("meta");
+
+        for (const sc of server_cards) {
+            card_store.put({
+                ...sc,
+                dirty: 0
+            });
+        }
+
+        for (const lc of local_own_cards) {
+            const match = server_card_map.get(normalize(lc.question, lc.category));
+            if (match) {
+                remapped_uuids.set(lc.id, match.id);
+
+                if (lc.id !== match.id) {
+                    card_store.delete(lc.id);
+                }
+
+                if (lc.updated_at > match.updated_at) {
+                    card_store.put({
+                        id: match.id,
+                        question: lc.question,
+                        answer: lc.answer,
+                        category: lc.category,
+                        created_at: match.created_at || lc.created_at,
+                        updated_at: lc.updated_at,
+                        deleted: lc.deleted ? 1 : 0,
+                        dirty: 1
+                    });
+                }
+            } else {
+                card_store.put({
+                    ...lc,
+                    dirty: 1
+                });
+            }
+        }
+
+        const server_prog_keys = new Set();
+        for (const sp of server_progress) {
+            server_prog_keys.add(`${sp.card_kind}:${sp.card_id}`);
+            prog_store.put({
+                ...sp,
+                dirty: 0
+            });
+        }
+
+        for (const lp of local_progress) {
+            if (lp.card_kind === "own" && remapped_uuids.has(lp.card_id)) {
+                const canonical_id = remapped_uuids.get(lp.card_id);
+                prog_store.delete(["own", lp.card_id]);
+
+                const canonical_key = `own:${canonical_id}`;
+                if (!server_prog_keys.has(canonical_key)) {
+                    prog_store.put({
+                        ...lp,
+                        card_id: canonical_id,
+                        dirty: 1
+                    });
+                }
+            } else {
+                prog_store.put({
+                    ...lp,
+                    dirty: 1
+                });
+            }
+        }
+
+        if (server_settings && local_settings && local_settings.dirty !== 1) {
+            settings_store.put({
+                id: "user_settings",
+                daily_new_limit: server_settings.daily_new_limit,
+                enabled_categories: server_settings.enabled_categories || [],
+                updated_at: server_settings.updated_at,
+                dirty: 0
+            });
+        } else if (local_settings) {
+            settings_store.put({
+                ...local_settings,
+                dirty: 1
+            });
+        }
+
+        meta_store.put({ key: "mode", value: "account" });
+        if (username) {
+            meta_store.put({ key: "username", value: username });
+        }
+        if (server_version > 0) {
+            meta_store.put({ key: "lastSyncVersion", value: server_version });
+        }
+
+        tx.oncomplete = () => resolve({ remapped_uuids });
+        tx.onerror = () => reject(tx.error);
+    });
+}

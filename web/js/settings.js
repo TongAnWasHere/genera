@@ -1,14 +1,22 @@
 import {
     get_user_settings,
     save_user_settings,
-    get_all_categories
+    get_all_categories,
+    get_meta
 } from "./localdb.js";
+import {
+    perform_account_login,
+    perform_account_logout,
+    sync_now
+} from "./sync.js";
 
 let on_change_callback = null;
+let current_auth_mode = "login";
 
 export function init_settings_view(on_change) {
     on_change_callback = on_change;
     setup_settings_listeners();
+    setup_account_listeners();
     render_settings_view();
 }
 
@@ -42,6 +50,42 @@ export async function render_settings_view() {
         item_label.appendChild(checkbox);
         item_label.appendChild(span);
         categories_container.appendChild(item_label);
+    }
+
+    await render_account_section();
+}
+
+async function render_account_section() {
+    const badge = document.getElementById("account-status-badge");
+    const text = document.getElementById("account-status-text");
+    const login_btn = document.getElementById("btn-open-login");
+    const register_btn = document.getElementById("btn-open-register");
+    const sync_btn = document.getElementById("btn-account-sync");
+    const logout_btn = document.getElementById("btn-account-logout");
+
+    if (!badge || !text) return;
+
+    const mode = await get_meta("mode");
+    const username = await get_meta("username");
+
+    if (mode === "account") {
+        badge.textContent = "Logged In";
+        badge.className = "badge badge-official";
+        text.textContent = `Logged in as ${username || "user"}. Syncing enabled across your devices.`;
+
+        if (login_btn) login_btn.style.display = "none";
+        if (register_btn) register_btn.style.display = "none";
+        if (sync_btn) sync_btn.style.display = "inline-block";
+        if (logout_btn) logout_btn.style.display = "inline-block";
+    } else {
+        badge.textContent = "Local Mode";
+        badge.className = "badge";
+        text.textContent = "Using local storage. Your cards and study progress are stored only on this browser.";
+
+        if (login_btn) login_btn.style.display = "inline-block";
+        if (register_btn) register_btn.style.display = "inline-block";
+        if (sync_btn) sync_btn.style.display = "none";
+        if (logout_btn) logout_btn.style.display = "none";
     }
 }
 
@@ -110,6 +154,127 @@ function setup_settings_listeners() {
                 }
             } catch (err) {
                 alert("Failed to save settings: " + err.message);
+            }
+        });
+    }
+}
+
+function setup_account_listeners() {
+    const auth_modal = document.getElementById("auth-modal");
+    const auth_form = document.getElementById("auth-form");
+    const auth_title = document.getElementById("auth-modal-title");
+    const auth_error = document.getElementById("auth-error-msg");
+    const auth_user_input = document.getElementById("auth-username-input");
+    const auth_pass_input = document.getElementById("auth-password-input");
+    const auth_toggle_btn = document.getElementById("auth-toggle-mode-btn");
+    const auth_cancel_btn = document.getElementById("auth-cancel-btn");
+    const auth_submit_btn = document.getElementById("auth-submit-btn");
+
+    const open_login_btn = document.getElementById("btn-open-login");
+    const open_register_btn = document.getElementById("btn-open-register");
+    const sync_btn = document.getElementById("btn-account-sync");
+    const logout_btn = document.getElementById("btn-account-logout");
+
+    function open_modal(mode) {
+        current_auth_mode = mode;
+        if (auth_error) {
+            auth_error.style.display = "none";
+            auth_error.textContent = "";
+        }
+        if (auth_user_input) auth_user_input.value = "";
+        if (auth_pass_input) auth_pass_input.value = "";
+
+        if (mode === "login") {
+            if (auth_title) auth_title.textContent = "Log In";
+            if (auth_submit_btn) auth_submit_btn.textContent = "Log In";
+            if (auth_toggle_btn) auth_toggle_btn.textContent = "Need an account? Register";
+        } else {
+            if (auth_title) auth_title.textContent = "Create Account";
+            if (auth_submit_btn) auth_submit_btn.textContent = "Register";
+            if (auth_toggle_btn) auth_toggle_btn.textContent = "Already have an account? Log In";
+        }
+
+        if (auth_modal) auth_modal.showModal();
+    }
+
+    if (open_login_btn) {
+        open_login_btn.addEventListener("click", () => open_modal("login"));
+    }
+
+    if (open_register_btn) {
+        open_register_btn.addEventListener("click", () => open_modal("register"));
+    }
+
+    if (auth_toggle_btn) {
+        auth_toggle_btn.addEventListener("click", () => {
+            const next_mode = current_auth_mode === "login" ? "register" : "login";
+            open_modal(next_mode);
+        });
+    }
+
+    if (auth_cancel_btn && auth_modal) {
+        auth_cancel_btn.addEventListener("click", () => {
+            auth_modal.close();
+        });
+    }
+
+    if (sync_btn) {
+        sync_btn.addEventListener("click", async () => {
+            sync_btn.disabled = true;
+            sync_btn.textContent = "Syncing...";
+            try {
+                await sync_now(on_change_callback);
+            } finally {
+                sync_btn.disabled = false;
+                sync_btn.textContent = "Sync Now";
+            }
+        });
+    }
+
+    if (logout_btn) {
+        logout_btn.addEventListener("click", async () => {
+            if (confirm("Log out of your account? This device will return to local mode.")) {
+                await perform_account_logout(on_change_callback);
+                await render_account_section();
+            }
+        });
+    }
+
+    if (auth_form) {
+        auth_form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const username = auth_user_input.value.trim();
+            const password = auth_pass_input.value;
+
+            if (auth_submit_btn) {
+                auth_submit_btn.disabled = true;
+                auth_submit_btn.textContent = "Connecting...";
+            }
+
+            try {
+                await perform_account_login({
+                    username: username,
+                    password: password,
+                    is_register: current_auth_mode === "register",
+                    on_update: on_change_callback
+                });
+
+                if (auth_modal) auth_modal.close();
+                await render_account_section();
+                if (on_change_callback) {
+                    await on_change_callback();
+                }
+            } catch (err) {
+                if (auth_error) {
+                    auth_error.textContent = err.message;
+                    auth_error.style.display = "block";
+                }
+            } finally {
+                if (auth_submit_btn) {
+                    auth_submit_btn.disabled = false;
+                    auth_submit_btn.textContent = current_auth_mode === "login" ? "Log In" : "Register";
+                }
             }
         });
     }

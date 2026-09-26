@@ -5,7 +5,8 @@ import {
     get_dirty_progress_rows,
     get_dirty_settings,
     count_dirty_rows,
-    apply_sync_batch
+    apply_sync_batch,
+    merge_local_into_account
 } from "./localdb.js";
 
 let is_syncing = false;
@@ -220,4 +221,72 @@ export async function init_sync_engine(on_update) {
 
     await update_sync_status_ui();
     await sync_now(on_update);
+}
+
+export async function perform_account_login({ username, password, is_register = false, on_update = null }) {
+    const endpoint = is_register ? "/api/register" : "/api/login";
+    const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) {
+        let err_msg = "Authentication failed.";
+        try {
+            const err_data = await res.json();
+            if (err_data.error) err_msg = err_data.error;
+        } catch (_) {}
+        throw new Error(err_msg);
+    }
+
+    const user_data = await res.json();
+    const current_mode = await get_meta("mode");
+
+    if (current_mode === "local") {
+        const pull_res = await fetch("/api/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                since: 0,
+                own_cards: [],
+                progress: [],
+                settings: null
+            })
+        });
+
+        if (pull_res.ok) {
+            const pull_data = await pull_res.json();
+            await merge_local_into_account({
+                server_cards: pull_data.own_cards || [],
+                server_progress: pull_data.progress || [],
+                server_settings: pull_data.settings || null,
+                server_version: pull_data.version || 0,
+                username: user_data.username
+            });
+        } else {
+            await set_meta("mode", "account");
+            await set_meta("username", user_data.username);
+        }
+    } else {
+        await set_meta("mode", "account");
+        await set_meta("username", user_data.username);
+    }
+
+    await sync_now(on_update);
+    return user_data;
+}
+
+export async function perform_account_logout(on_update = null) {
+    try {
+        await fetch("/api/logout", { method: "POST" });
+    } catch (_) {}
+
+    await set_meta("mode", "local");
+    await set_meta("username", null);
+    await update_sync_status_ui();
+
+    if (on_update) {
+        await on_update();
+    }
 }

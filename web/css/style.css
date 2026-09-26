@@ -679,3 +679,13 @@ body {
 .settings-about-section a:hover {
   text-decoration: underline;
 }
+
+.auth-error {
+  color: var(--color-red);
+  background-color: #ffebe9;
+  border: 1px solid rgba(207, 34, 46, 0.2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: var(--space-3);
+}
