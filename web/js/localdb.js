@@ -331,6 +331,18 @@ export async function get_all_catalog_cards() {
     });
 }
 
+export async function get_catalog_card(id) {
+    const db = await open_db();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction("catalog", "readonly");
+        const store = tx.objectStore("catalog");
+        const card_id = typeof id === "string" && !isNaN(Number(id)) ? Number(id) : id;
+        const req = store.get(card_id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+    });
+}
+
 export async function get_all_progress_rows() {
     const db = await open_db();
     return new Promise((resolve, reject) => {

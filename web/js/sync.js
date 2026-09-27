@@ -1,6 +1,8 @@
 import {
     get_meta,
     set_meta,
+    get_catalog_card,
+    get_own_card,
     get_dirty_own_cards,
     get_dirty_progress_rows,
     get_dirty_settings,
@@ -74,6 +76,58 @@ function sanitize_settings_for_sync(s) {
     };
 }
 
+export async function show_conflict_banner(conflicts) {
+    if (!conflicts || conflicts.length === 0) {
+        return;
+    }
+
+    const banner = document.getElementById("conflict-banner");
+    const message_el = document.getElementById("conflict-banner-message");
+    const dismiss_btn = document.getElementById("btn-dismiss-conflict");
+    if (!banner || !message_el) {
+        return;
+    }
+
+    const names = [];
+    for (const c of conflicts) {
+        if (c.type === "card") {
+            names.push(c.question ? `Card "${c.question}"` : `Card ${c.id}`);
+        } else if (c.type === "progress") {
+            let q = "";
+            try {
+                if (c.card_kind === "catalog") {
+                    const card = await get_catalog_card(c.card_id);
+                    if (card) q = card.question;
+                } else if (c.card_kind === "own") {
+                    const card = await get_own_card(c.card_id);
+                    if (card) q = card.question;
+                }
+            } catch (_) {}
+            names.push(q ? `Progress for "${q}"` : `Progress for card ${c.card_id}`);
+        } else if (c.type === "settings") {
+            names.push("Study settings");
+        }
+    }
+
+    const unique_names = [...new Set(names)];
+    if (unique_names.length === 0) {
+        return;
+    }
+
+    const text = unique_names.length === 1
+        ? `Sync conflict: A newer version from the server replaced your local changes to ${unique_names[0]}.`
+        : `Sync conflict: Newer versions from the server replaced your local changes to: ${unique_names.join(", ")}.`;
+
+    message_el.textContent = text;
+    banner.style.display = "flex";
+
+    if (dismiss_btn) {
+        dismiss_btn.onclick = () => {
+            banner.style.display = "none";
+        };
+    }
+}
+
 export async function sync_now(on_update) {
     if (is_syncing) {
         return false;
@@ -102,6 +156,7 @@ export async function sync_now(on_update) {
 
     is_syncing = true;
     let total_applied = 0;
+    const all_conflicts = [];
 
     try {
         let has_more = true;
@@ -161,7 +216,7 @@ export async function sync_now(on_update) {
             const server_settings = data.settings || null;
             const server_version = data.version || 0;
 
-            await apply_sync_batch({
+            const batch_result = await apply_sync_batch({
                 server_cards,
                 server_progress,
                 server_settings,
@@ -171,10 +226,18 @@ export async function sync_now(on_update) {
                 server_version
             });
 
+            if (batch_result && batch_result.conflicts && batch_result.conflicts.length > 0) {
+                all_conflicts.push(...batch_result.conflicts);
+            }
+
             total_applied += server_cards.length + server_progress.length + (server_settings ? 1 : 0);
 
             const remaining_dirty = await count_dirty_rows();
             has_more = data.has_more === true || remaining_dirty > 0;
+        }
+
+        if (all_conflicts.length > 0) {
+            await show_conflict_banner(all_conflicts);
         }
 
         const remaining = await count_dirty_rows();
@@ -216,6 +279,14 @@ export async function init_sync_engine(on_update) {
         status_pill.title = "Click to sync now";
         status_pill.addEventListener("click", () => {
             sync_now(on_update);
+        });
+    }
+
+    const dismiss_btn = document.getElementById("btn-dismiss-conflict");
+    const banner = document.getElementById("conflict-banner");
+    if (dismiss_btn && banner) {
+        dismiss_btn.addEventListener("click", () => {
+            banner.style.display = "none";
         });
     }
 

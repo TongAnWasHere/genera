@@ -20,6 +20,14 @@
     </nav>
   </header>
 
+  <div id="conflict-banner" class="conflict-banner" role="alert" style="display: none;">
+    <div class="conflict-banner-content">
+      <span class="conflict-banner-icon">&#9888;</span>
+      <span id="conflict-banner-message" class="conflict-banner-text"></span>
+    </div>
+    <button type="button" id="btn-dismiss-conflict" class="conflict-banner-dismiss" aria-label="Dismiss conflict alert">&times;</button>
+  </div>
+
   <main class="app-main">
     <section id="tab-dashboard" class="tab-panel active">
       <div class="stats-grid">
