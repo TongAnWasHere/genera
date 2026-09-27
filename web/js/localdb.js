@@ -92,40 +92,93 @@ export async function load_catalog_if_needed() {
     const db = await open_db();
     await init_defaults();
 
-    const current_version = await get_meta("catalogVersion");
+    const current_version = (await get_meta("catalogVersion")) || 0;
     const existing_count = await count_store("catalog");
 
     if (current_version > 0 && existing_count > 0) {
-        return { downloaded: false, count: existing_count, version: current_version };
-    }
-
-    const response = await fetch("/data/catalog.json");
-    if (!response.ok) {
-        throw new Error("Failed to download catalog: " + response.statusText);
-    }
-
-    const data = await response.json();
-    const cards = data.cards || [];
-
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(["catalog", "meta"], "readwrite");
-        const catalog_store = tx.objectStore("catalog");
-        const meta_store = tx.objectStore("meta");
-
-        for (const card of cards) {
-            catalog_store.put(card);
+        if (!navigator.onLine) {
+            return { downloaded: false, count: existing_count, version: current_version };
         }
 
-        meta_store.put({ key: "catalogVersion", value: data.version || 1 });
+        try {
+            const manifest_res = await fetch("/data/catalog-manifest.json", { cache: "no-cache" });
+            if (!manifest_res.ok) {
+                return { downloaded: false, count: existing_count, version: current_version };
+            }
 
-        tx.oncomplete = () => {
-            resolve({ downloaded: true, count: cards.length, version: data.version || 1 });
-        };
+            const manifest = await manifest_res.json();
+            const manifest_version = typeof manifest.version === "number" ? manifest.version : 0;
 
-        tx.onerror = () => {
-            reject(new Error("Failed to save catalog to IndexedDB: " + tx.error));
-        };
-    });
+            if (manifest_version <= current_version) {
+                return { downloaded: false, count: existing_count, version: current_version };
+            }
+
+            const cat_res = await fetch("/data/catalog.json", { cache: "no-cache" });
+            if (!cat_res.ok) {
+                console.error("Failed to download catalog update:", cat_res.statusText);
+                return { downloaded: false, count: existing_count, version: current_version };
+            }
+
+            const data = await cat_res.json();
+            const cards = data.cards || [];
+            const new_version = typeof data.version === "number" ? data.version : manifest_version;
+
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(["catalog", "meta"], "readwrite");
+                const catalog_store = tx.objectStore("catalog");
+                const meta_store = tx.objectStore("meta");
+
+                catalog_store.clear();
+                for (const card of cards) {
+                    catalog_store.put(card);
+                }
+                meta_store.put({ key: "catalogVersion", value: new_version });
+
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(new Error("Failed to save updated catalog to IndexedDB: " + tx.error));
+            });
+
+            return { downloaded: true, count: cards.length, version: new_version };
+        } catch (err) {
+            console.error("Catalog update check failed:", err);
+            return { downloaded: false, count: existing_count, version: current_version };
+        }
+    }
+
+    try {
+        const response = await fetch("/data/catalog.json");
+        if (!response.ok) {
+            console.error("Failed to download catalog:", response.statusText);
+            return { downloaded: false, count: 0, version: 0 };
+        }
+
+        const data = await response.json();
+        const cards = data.cards || [];
+        const initial_version = typeof data.version === "number" ? data.version : 1;
+
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(["catalog", "meta"], "readwrite");
+            const catalog_store = tx.objectStore("catalog");
+            const meta_store = tx.objectStore("meta");
+
+            for (const card of cards) {
+                catalog_store.put(card);
+            }
+
+            meta_store.put({ key: "catalogVersion", value: initial_version });
+
+            tx.oncomplete = () => {
+                resolve({ downloaded: true, count: cards.length, version: initial_version });
+            };
+
+            tx.onerror = () => {
+                reject(new Error("Failed to save catalog to IndexedDB: " + tx.error));
+            };
+        });
+    } catch (err) {
+        console.error("Initial catalog download failed:", err);
+        return { downloaded: false, count: 0, version: 0 };
+    }
 }
 
 export function get_today_date() {

@@ -8,7 +8,8 @@ import {
     get_dirty_settings,
     count_dirty_rows,
     apply_sync_batch,
-    merge_local_into_account
+    merge_local_into_account,
+    load_catalog_if_needed
 } from "./localdb.js";
 
 let is_syncing = false;
@@ -265,8 +266,12 @@ export async function sync_now(on_update) {
 }
 
 export async function init_sync_engine(on_update) {
-    window.addEventListener("online", () => {
-        sync_now(on_update);
+    window.addEventListener("online", async () => {
+        const cat_result = await load_catalog_if_needed();
+        if (cat_result && cat_result.downloaded && on_update) {
+            await on_update();
+        }
+        await sync_now(on_update);
     });
 
     window.addEventListener("offline", () => {

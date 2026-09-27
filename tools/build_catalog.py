@@ -2,6 +2,7 @@ import hashlib
 import html
 import json
 from pathlib import Path
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -168,8 +169,20 @@ def main():
     cards = clean_raw_questions(all_questions)
     print(f"Produced {len(cards)} unique clean cards.", flush=True)
 
-    save_catalog_files(cards, version=1)
-    print("Catalog and manifest saved to web/data/catalog.json and web/data/catalog-manifest.json", flush=True)
+    manifest_path = data_dir / "catalog-manifest.json"
+    target_version = 1
+    if len(sys.argv) > 1 and sys.argv[1].isdigit():
+        target_version = int(sys.argv[1])
+    elif manifest_path.exists():
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                manifest_data = json.load(f)
+                target_version = manifest_data.get("version", 1)
+        except Exception:
+            target_version = 1
+
+    save_catalog_files(cards, version = target_version)
+    print(f"Catalog and manifest (v{target_version}) saved to web/data/catalog.json and web/data/catalog-manifest.json", flush=True)
 
 if __name__ == "__main__":
     main()
