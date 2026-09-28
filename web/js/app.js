@@ -13,6 +13,7 @@ import { init_review_view, render_review_view } from "./review.js";
 import { init_settings_view, render_settings_view } from "./settings.js";
 import { count_session_cards } from "./session.js";
 import { init_sync_engine, update_sync_status_ui, sync_now } from "./sync.js";
+import { init_theme } from "./theme.js";
 
 const tabs = document.querySelectorAll(".tab-btn");
 const panels = document.querySelectorAll(".tab-panel");
@@ -38,6 +39,19 @@ tabs.forEach((btn) => {
         }
     });
 });
+
+const logo_btn = document.getElementById("brand-logo");
+if (logo_btn) {
+    logo_btn.addEventListener("click", async () => {
+        const dashboard_tab_btn = document.querySelector('.tab-btn[data-tab="dashboard"]');
+        if (dashboard_tab_btn) {
+            dashboard_tab_btn.click();
+        }
+        await update_dashboard_stats();
+        await update_sync_status_ui();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}
 
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js");
@@ -213,6 +227,7 @@ function render_dashboard_message(counts) {
 
 async function init_app() {
     try {
+        init_theme();
         setup_cards_listeners(async () => {
             await update_dashboard_stats();
             await update_sync_status_ui();

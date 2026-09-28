@@ -1,8 +1,15 @@
-const cache_name = "genera-v1";
+const cache_name = "genera-v4";
 
 const app_shell_assets = [
   "/",
   "/index.html",
+  "/favicon.ico",
+  "/favicon-32x32.png",
+  "/favicon-16x16.png",
+  "/apple-touch-icon.png",
+  "/android-chrome-192x192.png",
+  "/android-chrome-512x512.png",
+  "/site.webmanifest",
   "/css/style.css",
   "/js/app.js",
   "/js/cards.js",
@@ -13,6 +20,7 @@ const app_shell_assets = [
   "/js/session.js",
   "/js/settings.js",
   "/js/sync.js",
+  "/js/theme.js",
   "/data/catalog.json",
   "/data/catalog-manifest.json"
 ];

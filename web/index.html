@@ -4,20 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Genera</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    (function () {
+      const saved_theme = localStorage.getItem("genera_theme");
+      const prefers_dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved_theme || (prefers_dark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
 </head>
 <body>
   <header class="app-header">
-    <div class="brand">
-      <h1 class="logo">Genera</h1>
-      <span id="sync-status" class="status-pill status-gray">Local mode (not backed up)</span>
+    <div class="header-inner">
+      <div class="brand">
+        <h1 class="logo-wrap">
+          <button type="button" id="brand-logo" class="logo-btn" title="Back to Dashboard &amp; Refresh" aria-label="Genera Dashboard">
+            <img src="/apple-touch-icon.png" alt="" class="logo-icon" width="24" height="24">
+            <span class="logo-text">Genera</span>
+          </button>
+        </h1>
+      </div>
+      <nav class="tab-bar" aria-label="Main Navigation">
+        <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+        <button class="tab-btn" data-tab="review">Review</button>
+        <button class="tab-btn" data-tab="cards">Cards</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
+      </nav>
+      <div class="header-actions">
+        <span id="sync-status" class="status-pill status-gray">Local mode (not backed up)</span>
+        <button type="button" id="btn-theme-toggle" class="btn-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">&#9790;</button>
+      </div>
     </div>
-    <nav class="tab-bar" aria-label="Main Navigation">
-      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-      <button class="tab-btn" data-tab="review">Review</button>
-      <button class="tab-btn" data-tab="cards">Cards</button>
-      <button class="tab-btn" data-tab="settings">Settings</button>
-    </nav>
   </header>
 
   <div id="conflict-banner" class="conflict-banner" role="alert" style="display: none;">
@@ -119,6 +142,21 @@
             <span id="settings-saved-msg" class="settings-saved-pill" style="display: none;">Saved</span>
           </div>
         </form>
+
+        <div class="settings-section settings-theme-section">
+          <div class="settings-section-header">
+            <h3 class="settings-section-title">Appearance</h3>
+            <span id="settings-theme-badge" class="badge">System</span>
+          </div>
+          <p style="font-size: 13px; margin: 0; color: var(--color-text-muted);">
+            Choose your preferred color theme or match your system settings.
+          </p>
+          <div class="settings-category-actions">
+            <button type="button" id="btn-theme-light" class="btn btn-sm">Light</button>
+            <button type="button" id="btn-theme-dark" class="btn btn-sm">Dark</button>
+            <button type="button" id="btn-theme-system" class="btn btn-sm">System</button>
+          </div>
+        </div>
 
         <div class="settings-section settings-account-section">
           <div class="settings-section-header">
