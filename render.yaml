@@ -1,6 +1,7 @@
 services:
   - type: web
     name: genera
+    plan: free
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn server.app:app
