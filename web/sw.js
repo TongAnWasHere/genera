@@ -1,9 +1,97 @@
-const SW_VERSION = "0.0.1";
+const cache_name = "genera-v1";
+
+const app_shell_assets = [
+  "/",
+  "/index.html",
+  "/css/style.css",
+  "/js/app.js",
+  "/js/cards.js",
+  "/js/importer.js",
+  "/js/localdb.js",
+  "/js/review.js",
+  "/js/scheduler.js",
+  "/js/session.js",
+  "/js/settings.js",
+  "/js/sync.js",
+  "/data/catalog.json",
+  "/data/catalog-manifest.json"
+];
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(cache_name).then((cache) => {
+      return cache.addAll(app_shell_assets);
+    }).then(() => {
+      return self.skipWaiting();
+    })
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== cache_name) {
+            return caches.delete(key);
+          }
+        })
+      );
+    }).then(() => {
+      return self.clients.claim();
+    })
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+
+  if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
+  if (url.pathname === "/data/catalog-manifest.json") {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(cache_name).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return cached || caches.match("/index.html") || caches.match("/");
+      }).catch(() => {
+        return caches.match("/index.html");
+      })
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) {
+        return cached;
+      }
+      return fetch(event.request).then((response) => {
+        if (response && response.status === 200 && response.type === "basic") {
+          const clone = response.clone();
+          caches.open(cache_name).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      });
+    })
+  );
 });
