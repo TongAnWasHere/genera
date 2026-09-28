@@ -347,6 +347,9 @@ body {
 .stat-value {
   font-size: 24px;
   font-weight: 600;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
 }
 
 .due-count { color: var(--color-amber); }
@@ -370,8 +373,84 @@ body {
   gap: var(--space-1);
 }
 
+.box-item strong {
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .box-item span {
   color: var(--color-text-muted);
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--color-border);
+  border-top-color: var(--color-focus);
+  border-radius: 50%;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-sizing: border-box;
+}
+
+.spinner-sm {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-text-muted);
+  border-radius: 50%;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-sizing: border-box;
+}
+
+.due-count .spinner-sm {
+  border-top-color: var(--color-amber);
+}
+
+.spinner-xs {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--color-border);
+  border-top-color: var(--color-text-muted);
+  border-radius: 50%;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-sizing: border-box;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .spinner-sm,
+  .spinner-xs {
+    animation-duration: 2s;
+  }
+}
+
+.dashboard-loading {
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.dashboard-loading p {
+  margin: 0;
 }
 
 .empty-state {

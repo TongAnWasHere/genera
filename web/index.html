@@ -56,31 +56,36 @@
       <div class="stats-grid">
         <div class="stat-card">
           <span class="stat-label">Due Today</span>
-          <span class="stat-value due-count">0</span>
+          <span class="stat-value due-count"><span class="spinner-sm" aria-label="Loading"></span></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">New Left</span>
-          <span class="stat-value new-count">0</span>
+          <span class="stat-value new-count"><span class="spinner-sm" aria-label="Loading"></span></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Total Cards</span>
-          <span class="stat-value total-count">0</span>
+          <span class="stat-value total-count"><span class="spinner-sm" aria-label="Loading"></span></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Unseen</span>
-          <span class="stat-value unseen-count">0</span>
+          <span class="stat-value unseen-count"><span class="spinner-sm" aria-label="Loading"></span></span>
         </div>
       </div>
 
       <div class="box-distribution">
-        <div class="box-item"><span>Box 1</span><strong>0</strong></div>
-        <div class="box-item"><span>Box 2</span><strong>0</strong></div>
-        <div class="box-item"><span>Box 3</span><strong>0</strong></div>
-        <div class="box-item"><span>Box 4</span><strong>0</strong></div>
-        <div class="box-item"><span>Box 5</span><strong>0</strong></div>
+        <div class="box-item"><span>Box 1</span><strong><span class="spinner-xs" aria-label="Loading"></span></strong></div>
+        <div class="box-item"><span>Box 2</span><strong><span class="spinner-xs" aria-label="Loading"></span></strong></div>
+        <div class="box-item"><span>Box 3</span><strong><span class="spinner-xs" aria-label="Loading"></span></strong></div>
+        <div class="box-item"><span>Box 4</span><strong><span class="spinner-xs" aria-label="Loading"></span></strong></div>
+        <div class="box-item"><span>Box 5</span><strong><span class="spinner-xs" aria-label="Loading"></span></strong></div>
       </div>
 
-      <div id="dashboard-message" style="margin-top: var(--space-4);"></div>
+      <div id="dashboard-message" style="margin-top: var(--space-4);">
+        <div class="dashboard-loading">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Loading study data...</p>
+        </div>
+      </div>
     </section>
 
     <section id="tab-review" class="tab-panel" hidden>

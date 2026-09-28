@@ -176,6 +176,10 @@ async function update_dashboard_stats() {
         render_dashboard_message(counts);
     } catch (err) {
         console.error("Failed to update dashboard stats:", err);
+        const container = document.getElementById("dashboard-message");
+        if (container) {
+            container.innerHTML = '<div class="empty-state"><p>Unable to load dashboard data. Please refresh the page.</p></div>';
+        }
     }
 }
 
@@ -245,7 +249,20 @@ async function init_app() {
             await update_dashboard_stats();
             await update_sync_status_ui();
         });
-        await load_catalog_if_needed();
+
+        const catalog_count = await count_store("catalog");
+        const own_count = await count_store("own_cards");
+        if (catalog_count > 0 || own_count > 0) {
+            await update_dashboard_stats();
+            await refresh_cards_view();
+        }
+
+        try {
+            await load_catalog_if_needed();
+        } catch (cat_err) {
+            console.error("Failed to check/load catalog:", cat_err);
+        }
+
         await update_dashboard_stats();
         await refresh_cards_view();
         await init_sync_engine(async () => {
