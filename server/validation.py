@@ -65,6 +65,10 @@ def validate_own_card(card):
     if not is_valid_utc_timestamp(updated_at):
         return False, "updated_at must be in UTC format (YYYY-MM-DDTHH:MM:SSZ).", "updated_at"
 
+    deleted = card.get("deleted")
+    if deleted is not None and deleted not in (0, 1):
+        return False, "deleted must be 0 or 1.", "deleted"
+
     return True, "", ""
 
 def validate_progress_row(item):
@@ -108,6 +112,10 @@ def validate_progress_row(item):
     updated_at = item.get("updated_at")
     if not is_valid_utc_timestamp(updated_at):
         return False, "updated_at must be in UTC format (YYYY-MM-DDTHH:MM:SSZ).", "updated_at"
+
+    hidden = item.get("hidden")
+    if hidden is not None and hidden not in (0, 1):
+        return False, "hidden must be 0 or 1.", "hidden"
 
     return True, "", ""
 
