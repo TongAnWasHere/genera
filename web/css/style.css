@@ -278,6 +278,156 @@ body {
 .status-amber { color: var(--color-amber); }
 .status-blue { color: var(--color-blue); }
 
+.account-menu-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.account-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.account-btn:hover,
+.account-menu-container.open .account-btn {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+#account-pill-text {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-modal);
+  padding: var(--space-4);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  text-align: left;
+}
+
+.account-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .account-menu-container:hover .account-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+.account-menu-container.open .account-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.account-dropdown-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.account-dropdown-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.account-dropdown-user-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.account-dropdown-icon {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.account-dropdown-username {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-dropdown-subtext {
+  font-size: 13px;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.account-dropdown-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 0;
+}
+
+.account-dropdown-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.account-dropdown-actions .btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
 @media (max-width: 720px) {
   .header-inner {
     flex-wrap: wrap;

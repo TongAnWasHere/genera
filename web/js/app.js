@@ -10,7 +10,7 @@ import {
 import { open_add_modal, populate_category_dropdown, render_cards_view, setup_cards_listeners } from "./cards.js";
 import { process_import_file } from "./importer.js";
 import { init_review_view, render_review_view } from "./review.js";
-import { init_settings_view, render_settings_view } from "./settings.js";
+import { init_settings_view, render_settings_view, render_account_section } from "./settings.js";
 import { count_session_cards } from "./session.js";
 import { init_sync_engine, update_sync_status_ui, sync_now } from "./sync.js";
 import { init_theme } from "./theme.js";
@@ -235,20 +235,27 @@ async function init_app() {
         setup_cards_listeners(async () => {
             await update_dashboard_stats();
             await update_sync_status_ui();
+            await render_account_section();
         });
         init_review_view(async () => {
             await update_dashboard_stats();
             await update_sync_status_ui();
+            await render_account_section();
             await sync_now(async () => {
                 await update_dashboard_stats();
                 await refresh_cards_view();
+                await render_account_section();
             });
         });
         init_settings_view(async () => {
             await render_review_view();
             await update_dashboard_stats();
             await update_sync_status_ui();
+            await render_account_section();
         });
+
+        await update_sync_status_ui();
+        await render_account_section();
 
         const catalog_count = await count_store("catalog");
         const own_count = await count_store("own_cards");
@@ -269,6 +276,7 @@ async function init_app() {
             await update_dashboard_stats();
             await refresh_cards_view();
             await render_review_view();
+            await render_account_section();
         });
     } catch (err) {
         console.error("Initialization failed:", err);

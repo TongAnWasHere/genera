@@ -2,7 +2,8 @@ import {
     get_user_settings,
     save_user_settings,
     get_all_categories,
-    get_meta
+    get_meta,
+    count_dirty_rows
 } from "./localdb.js";
 import {
     perform_account_login,
@@ -17,6 +18,7 @@ export function init_settings_view(on_change) {
     on_change_callback = on_change;
     setup_settings_listeners();
     setup_account_listeners();
+    setup_account_dropdown();
     render_settings_view();
 }
 
@@ -55,13 +57,14 @@ export async function render_settings_view() {
     await render_account_section();
 }
 
-async function render_account_section() {
+export async function render_account_section() {
     const badge = document.getElementById("account-status-badge");
     const text = document.getElementById("account-status-text");
     const login_btn = document.getElementById("btn-open-login");
     const register_btn = document.getElementById("btn-open-register");
     const sync_btn = document.getElementById("btn-account-sync");
     const logout_btn = document.getElementById("btn-account-logout");
+    const dropdown_user = document.getElementById("dropdown-username");
 
     if (!badge || !text) return;
 
@@ -69,16 +72,32 @@ async function render_account_section() {
     const username = await get_meta("username");
 
     if (mode === "account") {
-        badge.textContent = "Logged In";
-        badge.className = "badge badge-official";
-        text.textContent = `Logged in as ${username || "user"}. Syncing enabled across your devices.`;
+        if (dropdown_user) dropdown_user.textContent = username || "Account";
+
+        if (!navigator.onLine) {
+            badge.textContent = "Offline";
+            badge.className = "badge";
+            text.textContent = `Logged in as ${username || "user"}. You are currently offline.`;
+        } else {
+            const dirty_count = await count_dirty_rows();
+            if (dirty_count > 0) {
+                badge.textContent = `${dirty_count} unsynced`;
+                badge.className = "badge badge-mine";
+                text.textContent = `Logged in as ${username || "user"}. ${dirty_count} local change(s) pending sync.`;
+            } else {
+                badge.textContent = "Synced";
+                badge.className = "badge badge-official";
+                text.textContent = `Logged in as ${username || "user"}. Syncing enabled across your devices.`;
+            }
+        }
 
         if (login_btn) login_btn.style.display = "none";
         if (register_btn) register_btn.style.display = "none";
         if (sync_btn) sync_btn.style.display = "inline-block";
         if (logout_btn) logout_btn.style.display = "inline-block";
     } else {
-        badge.textContent = "Local Mode";
+        if (dropdown_user) dropdown_user.textContent = "Local Mode";
+        badge.textContent = "Local";
         badge.className = "badge";
         text.textContent = "Using local storage. Your cards and study progress are stored only on this browser.";
 
@@ -176,6 +195,9 @@ function setup_account_listeners() {
     const logout_btn = document.getElementById("btn-account-logout");
 
     function open_modal(mode) {
+        const container = document.getElementById("account-menu-container");
+        if (container) container.classList.remove("open");
+
         current_auth_mode = mode;
         if (auth_error) {
             auth_error.style.display = "none";
@@ -278,4 +300,42 @@ function setup_account_listeners() {
             }
         });
     }
+}
+
+export function setup_account_dropdown() {
+    const container = document.getElementById("account-menu-container");
+    const btn = document.getElementById("sync-status");
+    const dropdown = document.getElementById("account-dropdown");
+    if (!container || !btn || !dropdown) return;
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const is_open = container.classList.toggle("open");
+        btn.setAttribute("aria-expanded", is_open ? "true" : "false");
+    });
+
+    const close_dropdown = () => {
+        container.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+    };
+
+    document.addEventListener("click", (e) => {
+        if (!container.contains(e.target)) {
+            close_dropdown();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && container.classList.contains("open")) {
+            close_dropdown();
+            btn.focus();
+        }
+    });
+
+    const action_btns = dropdown.querySelectorAll("button");
+    action_btns.forEach((b) => {
+        b.addEventListener("click", () => {
+            close_dropdown();
+        });
+    });
 }

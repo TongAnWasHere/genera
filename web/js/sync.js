@@ -17,17 +17,25 @@ let is_syncing = false;
 export function set_sync_status(text, color_class) {
     const el = document.getElementById("sync-status");
     if (!el) return;
-    el.textContent = text;
-    el.className = `status-pill ${color_class}`;
+    el.className = `status-pill ${color_class} account-btn`;
+    const text_el = document.getElementById("account-pill-text");
+    if (text_el) {
+        text_el.textContent = text;
+    } else {
+        el.textContent = text;
+    }
 }
 
 export async function update_sync_status_ui() {
+    const mode = await get_meta("mode");
+    const username = await get_meta("username");
+
     if (!navigator.onLine) {
-        set_sync_status("Offline", "status-gray");
+        const offline_label = mode === "account" && username ? `${username} (offline)` : "Offline";
+        set_sync_status(offline_label, "status-gray");
         return;
     }
 
-    const mode = await get_meta("mode");
     if (mode !== "account") {
         set_sync_status("Local mode (not backed up)", "status-gray");
         return;
@@ -35,9 +43,9 @@ export async function update_sync_status_ui() {
 
     const dirty_count = await count_dirty_rows();
     if (dirty_count > 0) {
-        set_sync_status(`${dirty_count} changes not synced`, "status-blue");
+        set_sync_status(`${username || "Account"} (${dirty_count} unsynced)`, "status-blue");
     } else {
-        set_sync_status("Synced", "status-green");
+        set_sync_status(username || "Account", "status-green");
     }
 }
 
@@ -278,14 +286,7 @@ export async function init_sync_engine(on_update) {
         set_sync_status("Offline", "status-gray");
     });
 
-    const status_pill = document.getElementById("sync-status");
-    if (status_pill) {
-        status_pill.style.cursor = "pointer";
-        status_pill.title = "Click to sync now";
-        status_pill.addEventListener("click", () => {
-            sync_now(on_update);
-        });
-    }
+
 
     const dismiss_btn = document.getElementById("btn-dismiss-conflict");
     const banner = document.getElementById("conflict-banner");

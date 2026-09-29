@@ -37,7 +37,33 @@
         <button class="tab-btn" data-tab="settings">Settings</button>
       </nav>
       <div class="header-actions">
-        <span id="sync-status" class="status-pill status-gray">Local mode (not backed up)</span>
+        <div class="account-menu-container" id="account-menu-container">
+          <button type="button" id="sync-status" class="status-pill status-gray account-btn" aria-haspopup="true" aria-expanded="false" title="Account &amp; Sync">
+            <span class="status-dot"></span>
+            <span id="account-pill-text">Local mode (not backed up)</span>
+          </button>
+          <div class="account-dropdown" id="account-dropdown" role="menu" aria-label="Account Menu">
+            <div class="account-dropdown-header">
+              <div class="account-dropdown-title-row">
+                <div class="account-dropdown-user-wrap">
+                  <span class="account-dropdown-icon" aria-hidden="true">&#128100;</span>
+                  <strong id="dropdown-username" class="account-dropdown-username">Local Mode</strong>
+                </div>
+                <span id="account-status-badge" class="badge">Local</span>
+              </div>
+              <p id="account-status-text" class="account-dropdown-subtext">
+                Using local storage. Your cards and study progress are stored only on this browser.
+              </p>
+            </div>
+            <div class="account-dropdown-divider"></div>
+            <div class="account-dropdown-actions">
+              <button type="button" id="btn-open-login" class="btn btn-sm btn-primary">Log In</button>
+              <button type="button" id="btn-open-register" class="btn btn-sm">Create Account</button>
+              <button type="button" id="btn-account-sync" class="btn btn-sm" style="display: none;">Sync Now</button>
+              <button type="button" id="btn-account-logout" class="btn btn-sm btn-danger" style="display: none;">Log Out</button>
+            </div>
+          </div>
+        </div>
         <button type="button" id="btn-theme-toggle" class="btn-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">&#9790;</button>
       </div>
     </div>
@@ -163,21 +189,6 @@
           </div>
         </div>
 
-        <div class="settings-section settings-account-section">
-          <div class="settings-section-header">
-            <h3 class="settings-section-title">Account &amp; Sync</h3>
-            <span id="account-status-badge" class="badge">Local Mode</span>
-          </div>
-          <p id="account-status-text" style="font-size: 13px; margin: 0; color: var(--color-text-muted);">
-            Using local storage. Your cards and study progress are stored only on this browser.
-          </p>
-          <div class="settings-category-actions">
-            <button type="button" id="btn-open-login" class="btn btn-sm btn-primary">Log In</button>
-            <button type="button" id="btn-open-register" class="btn btn-sm">Create Account</button>
-            <button type="button" id="btn-account-sync" class="btn btn-sm" style="display: none;">Sync Now</button>
-            <button type="button" id="btn-account-logout" class="btn btn-sm btn-danger" style="display: none;">Log Out</button>
-          </div>
-        </div>
 
         <div class="settings-section settings-about-section">
           <h3 class="settings-section-title">About &amp; Attribution</h3>
